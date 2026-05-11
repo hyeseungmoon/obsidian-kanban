@@ -1,5 +1,6 @@
 import { EditorView } from '@codemirror/view';
-import { Dispatch, StateUpdater, useContext, useRef } from 'preact/hooks';
+import { TFile, moment } from 'obsidian';
+import { Dispatch, StateUpdater, useContext, useEffect, useRef } from 'preact/hooks';
 import useOnclickOutside from 'react-cool-onclickoutside';
 import { t } from 'src/lang/helpers';
 
@@ -38,6 +39,45 @@ export function ItemForm({ addItems, editState, setEditState, hideButton }: Item
       });
     }
   };
+
+  useEffect(() => {
+    if (!isEditing(editState)) return;
+
+    const templatePath = stateManager.getSetting('card-template');
+    if (!templatePath) return;
+
+    const file = stateManager.app.vault.getAbstractFileByPath(templatePath as string);
+    if (!(file instanceof TFile)) return;
+
+    stateManager.app.vault.read(file).then((raw) => {
+      // Try Templater API first
+      const templater = (stateManager.app as any).plugins?.plugins?.['templater-obsidian'];
+      const processContent = (content: string) => {
+        // Basic date substitution fallback
+        return content.replace(/<% tp\.date\.now\("([^"]+)"\) %>/g, (_, fmt) => {
+          return moment().format(fmt);
+        });
+      };
+
+      const applyToEditor = (content: string) => {
+        const cm = editorRef.current;
+        if (cm && content.trim()) {
+          cm.dispatch({
+            changes: { from: 0, to: cm.state.doc.length, insert: content.trim() },
+          });
+        }
+      };
+
+      if (templater?.templater?.parse_template) {
+        templater.templater
+          .parse_template({ isTFolder: false, content: raw, file }, raw)
+          .then(applyToEditor)
+          .catch(() => applyToEditor(processContent(raw)));
+      } else {
+        applyToEditor(processContent(raw));
+      }
+    });
+  }, [editState]);
 
   if (isEditing(editState)) {
     return (

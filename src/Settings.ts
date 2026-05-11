@@ -72,6 +72,7 @@ export interface KanbanSettings {
   'move-dates'?: boolean;
   'move-tags'?: boolean;
   'move-task-metadata'?: boolean;
+  'card-template'?: string;
   'new-card-insertion-method'?: 'prepend' | 'prepend-compact' | 'append';
   'new-line-trigger'?: 'enter' | 'shift-enter';
   'new-note-folder'?: string;
@@ -100,6 +101,7 @@ export interface KanbanViewSettings {
 export const settingKeyLookup: Set<keyof KanbanSettings> = new Set([
   frontmatterKey,
   'append-archive-date',
+  'card-template',
   'archive-date-format',
   'archive-date-separator',
   'archive-with-date',
@@ -438,6 +440,20 @@ export class SettingsManager {
           });
         });
       });
+
+    new Setting(contentEl)
+      .setName(t('Card template'))
+      .setDesc(t('This template will be used to pre-fill new cards when clicking "Add a card".'))
+      .then(
+        createSearchSelect({
+          choices: templateFiles,
+          key: 'card-template',
+          warningText: templateWarning,
+          local,
+          placeHolderStr: t('No template'),
+          manager: this,
+        })
+      );
 
     new Setting(contentEl)
       .setName(t('Note template'))

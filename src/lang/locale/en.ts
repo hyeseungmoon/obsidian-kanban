@@ -58,6 +58,9 @@ const en = {
     'These settings will take precedence over the default Kanban board settings.',
   'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.':
     'Set the default Kanban board settings. Settings can be overridden on a board-by-board basis.',
+  'Card template': 'Card template',
+  'This template will be used to pre-fill new cards when clicking "Add a card".':
+    'This template will be used to pre-fill new cards when clicking "Add a card".',
   'Note template': 'Note template',
   'This template will be used when creating new notes from Kanban cards.':
     'This template will be used when creating new notes from Kanban cards.',
